@@ -24,16 +24,16 @@ public class MainActivity extends AppCompatActivity {
     private ProgressDialog dialog;
     private ListView listView;
 
-    private static String url = "http://api.androidhive.info/contacts/";
+    private static String url = "https://api.themoviedb.org/3/movie/550?api_key=b26733daf3a5f7fd722800d1110e79b8";
 
-    ArrayList<HashMap<String, String>> contactList;
+    ArrayList<HashMap<String, String>> movieList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        contactList = new ArrayList<>();
+        movieList = new ArrayList<>();
 
         listView = (ListView) findViewById(R.id.list);
         new GetMovie().execute();
@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
             dialog.setCancelable(false);
             dialog.show();
         }
+
         @Override
         protected Void doInBackground(Void... arg0) {
             HttpHandler sh = new HttpHandler();
@@ -61,37 +62,25 @@ public class MainActivity extends AppCompatActivity {
             if (jsonStr != null) {
                 try {
                     JSONObject jsonObj = new JSONObject(jsonStr);
+                    /*JSONObject genres = jsonObj.getJSONObject("adult");*/
 
                     // Getting JSON Array node
-                    JSONArray contacts = jsonObj.getJSONArray("contacts");
+                    JSONArray contacts = jsonObj.getJSONArray("production_companies");
 
                     // looping through All Contacts
                     for (int i = 0; i < contacts.length(); i++) {
-                        JSONObject c = contacts.getJSONObject(i);
+                        JSONObject mv = contacts.getJSONObject(i);
 
-                        String id = c.getString("id");
-                        String name = c.getString("name");
-                        String email = c.getString("email");
-                        String address = c.getString("address");
-                        String gender = c.getString("gender");
-
-                        // Phone node is JSON Object
-                        JSONObject phone = c.getJSONObject("phone");
-                        String mobile = phone.getString("mobile");
-                        String home = phone.getString("home");
-                        String office = phone.getString("office");
+                        String name = mv.getString("name");
 
                         // tmp hash map for single contact
                         HashMap<String, String> contact = new HashMap<>();
 
                         // adding each child node to HashMap key => value
-                        contact.put("id", id);
                         contact.put("name", name);
-                        contact.put("email", email);
-                        contact.put("mobile", mobile);
 
                         // adding contact to contact list
-                        contactList.add(contact);
+                        movieList.add(contact);
                     }
                 } catch (final JSONException e) {
                     Log.e(TAG, "Json parsing error: " + e.getMessage());
@@ -133,10 +122,8 @@ public class MainActivity extends AppCompatActivity {
              * Updating parsed JSON data into ListView
              * */
             ListAdapter adapter = new SimpleAdapter(
-                    MainActivity.this, contactList,
-                    R.layout.activity_list_item, new String[]{"name", "email",
-                    "mobile"}, new int[]{R.id.name,
-                    R.id.email, R.id.mobile});
+                    MainActivity.this, movieList,
+                    R.layout.activity_list_item, new String[]{"name"}, new int[]{R.id.name});
 
             listView.setAdapter(adapter);
         }
